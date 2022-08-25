@@ -1,9 +1,9 @@
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+// add your imports here
 
 public class TST<T extends Comparable<T>> implements Iterable<T>{
-    TSTNode<T> root;  // root node of the tree
+    // root node of the tree
+    TSTNode<T> root;
 
     // constructor
     public TST() {
@@ -13,131 +13,26 @@ public class TST<T extends Comparable<T>> implements Iterable<T>{
     // TODO: implement the tree class here
 
     public void insert(T element){
-        root = addNode(root, element);
+        
     }
 
     public void remove(T element){
-        root = removeNode(root, element);
+        
     }
 
     public boolean contains(T element){
-        if(root != null) return containsNode(root, element); 
-        return false; //Edge case i.e. tree is empty
+        return false;
     }
 
-	/*
-	 * The method divides the list into two: list1 (nodes without duplicates) and list2 (duplicates)
-	 *Iterate through list1 using a while loop(hasNext()) using element1 = iter.next();
-	 *		-> If list1 contains element1 (means it's a duplicate), add element1 to list2
-	 *Run rebalance on list1
-	 *		-> Build a new tree (based on list1)
-	 *Add the nodes of list2 one by one below the middle child (since it's always null)
-	 */
     public void rebalance(){
-    	TSTIterator<T> iter = (TSTIterator<T>) iterator();
-    	ArrayList<T> list = new ArrayList<>(); //List without duplicates
-    	ArrayList<T> listofDuplicates = new ArrayList<>(); //List of duplicates elements
-    																	//(so we can find those elements in the tree and add it to the middle child)
-    	//Split the sorted list into two, one containing the unique elements, and one containing the duplicates
-    	while(iter.hasNext()) {
-    		T sortedListElement = iter.next();
-    		if(list.contains(sortedListElement)) { //Compare first list with elements in the sorted list
-    			listofDuplicates.add(sortedListElement); //If the element already exists in the first list, then it's a duplicate so add it to the second list
-    		} else list.add(sortedListElement); //The element is not a duplicate so add it to the first list
-    	}
-    	//System.out.println(list);
-    	//System.out.println(listofDuplicates);
-
-    	root = rebalanceTree(list);
-    	//root = rebalanceTree(iter.list()); //Test case that works if I don't separate the list with duplicates
-       	
-    	while(listofDuplicates.size()>0) {	
-    		T elementToFind =  listofDuplicates.get(0);
-    		TSTNode<T> rootOfDuplicate = findNode(root, elementToFind);			
-			
-			while(rootOfDuplicate.mid != null) { //Handles the case of multiple duplicates and finds the right position to place it
-				rootOfDuplicate = rootOfDuplicate.mid;
-				//System.out.println("Operation Successful Bro!");
-			}	
-			rootOfDuplicate.mid = new TSTNode<T>(elementToFind);
-			listofDuplicates.remove(0);
-    	}
+        
     }
 
-    /*
-     * Helper Methods
-     								*/
-    //Recursive helper method to insert a node 
-    private TSTNode<T> addNode(TSTNode<T> root, T element) {
-        if(root == null) { //Base case
-            root = new TSTNode<T>(element); //When reached end of tree, create a new node and assign the element to it
-        } else if(element.compareTo(root.element)<0) { //If element < root, search the left subtree
-            root.left = addNode(root.left, element);
-        } else if(element.compareTo(root.element)==0) { //If element = root, search the middle subtree
-            root.mid = addNode(root.mid, element);
-        } else if(element.compareTo(root.element)>0) { //If element > root, search the right subtree
-            root.right = addNode(root.right, element);
-        }
-        return root; //Returns root
-    }
-    
-    //Recursive helper method to check if the tree contains a node
-    private boolean containsNode(TSTNode<T> root, T element) {
-    	if(element.compareTo(root.element)==0) return true; //If the node is found, return true
-    	    	
-    	if(element.compareTo(root.element)<0 && root.left != null)	 return containsNode(root.left, element);
-    	else if(element.compareTo(root.element)>0 && root.right != null) return containsNode(root.right, element);
-    	//We don't need to look through the middle subtree, because if it exists means the node we're looking for already exists
-    	
-    	return false; //If the tree doesn't contain the node, return false
-    } 
-    
-    //Recursive helper method to rebalance the tree
-    private TSTNode<T> rebalanceTree(List<T> list) {
-    	int mid = list.size()/2;
-    	TSTNode<T> root2;
-    	
-    	if(list.size() == 0) return null; //Base case (i.e. checking if list is empty)
-    	
-    	root2 = new TSTNode<T>(list.get(mid));
-    	root2.left = rebalanceTree(list.subList(0, mid)); //System.out.println("left: " + list.subList(0, mid));
-    	root2.right = rebalanceTree(list.subList(mid+1, list.size())); //System.out.println("right: " + list.subList(mid+1, size));
-		return root2;
-   	}
-    
-    //Recursive helper method to find a node in the tree (used to find the position of the duplicates and add it to the tree after rebalancing)
-    private TSTNode<T> findNode(TSTNode<T> root, T element) {
-    	if(root==null) return null;
-    	else if(element.compareTo(root.element)==0) return root;
-    	else if(element.compareTo(root.element)<0) return findNode(root.left, element);
-    	else return findNode(root.right, element);
-    }
-    
-    //Recursive helper method to remove a node
-    private TSTNode<T> removeNode(TSTNode<T> root, T element) {
-    	if(root == null ) return null;
-    	else if(element.compareTo(root.element)<0)
-    		root.left = removeNode(root.left, element);
-    	else if(element.compareTo(root.element)>0)
-    		root.right = removeNode(root.right, element);
-    	else if(root.mid != null) //Takes care of duplicate elements
-   				root.mid = removeNode(root.mid, element);  
-   		else if(root.left == null) //root has no left child; right child is the new node
-    		return root.right;
-   		else if (root.right == null) //root has no right child; left child is the new node 
-    		return root.left;
-   		else{ //root has both left and right children; largest element of the left subtree is the new node
-   			root.element = root.left.findMax().element;
-   			root.mid = root.left.findMax().mid; //If the maximum node in the left subtree has middle children, copy it over (if not, just copies null values)
-   			root.left.findMax().mid = null; //Delete the node we just copied to remove it from the tree
-   			root.left = removeNode(root.left, root.element);
-   		}
-   		return root;
-    }
+    // add your own helper methods if necessary
+
     
     /**
-     * 
-     * Calculate the height of the tree.
+     * Caculate the height of the tree.
      * You need to implement the height() method in the TSTNode class.
      *
      * @return -1 if the tree is empty otherwise the height of the root node
@@ -154,9 +49,9 @@ public class TST<T extends Comparable<T>> implements Iterable<T>{
      * @return an Iterator.
      */
     @Override
-    public Iterator<T> iterator() {
+    public Iterator iterator() {
         // TODO: implement the iterator method here
-    	return new TSTIterator<T>(root);
+        return null;
     }
 
     // --------------------PROVIDED METHODS--------------------
